@@ -51,7 +51,7 @@ def chat(request: ChatRequest):
         conversation_history.pop()
         raise HTTPException(
             status_code=502,
-            detail="The AI service is temporally unavailable. Please try again in a moment."
+            detail="The AI service is temporarily unavailable. Please try again in a moment."
         )
     
     reply = next((block.text for block in response.content if block.type == "text"), "")
