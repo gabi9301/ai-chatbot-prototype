@@ -35,8 +35,10 @@ function App() {
   }
   return (
     <div className="chat-container">
-      <h1>AI Chatbot</h1>
-      <button onClick={handleReset}>Reset</button>
+      <header className="chat-header">
+        <h1>AI Chatbot</h1>
+        <button onClick={handleReset}>Reset</button>
+      </header>
       <ChatWindow messages={messages} isLoading={isLoading} />
       <MessageInput onSend={sendMessage} />
     </div>
