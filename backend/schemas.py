@@ -3,10 +3,13 @@ from pydantic import BaseModel, ConfigDict
 
 class ChatRequest(BaseModel):
     message: str
+    conversation_id: int | None = None
+    language: str = "en"
 
 
 class ChatResponse(BaseModel):
     reply: str
+    conversation_id: int
 
 
 class MessageRead(BaseModel):
