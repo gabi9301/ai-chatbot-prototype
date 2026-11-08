@@ -45,3 +45,45 @@ def get_reply(
     crud.add_message(db, conversation.id, role="assistant", content=reply)
     
     return reply, conversation.id
+
+def stream_reply(
+    db: Session,
+    message: str,
+    conversation_id: int | None,
+    language: str,
+):
+    # 1. Get the existing conversation or make a new one
+    if conversation_id is None:
+        conversation = None
+        history = []
+    else:
+        conversation = crud.get_conversation(db, conversation_id)
+        if conversation is None:
+            raise ValueError("Conversation not found")
+        history = [
+            {"role": m.role, "content": m.content}
+            for m in crud.get_messages(db, conversation.id)
+        ]
+    history.append({"role": "user", "content": message})
+
+    # 2. Streaming: stream words while add them to full_text
+
+    full_text = ""
+    with client.messages.stream(
+        model=MODEL,
+        max_tokens=1024,
+        system=SYSTEM_PROMPT,
+        messages=history,
+    ) as stream:
+        for text in stream.text_stream:
+            full_text += text
+            yield {"type":"delta", "text": text}
+    
+    # 3. Save only after streaming went successful
+    if conversation is None:
+        conversation = crud.create_conversation(db, title=None, language=language)
+    crud.add_message(db, conversation.id, role="user", content=message)
+    crud.add_message(db, conversation.id, role="assistant", content=full_text)
+
+    # 4. Return conversation_id at the end
+    yield {"type": "done", "conversation_id": conversation.id}
