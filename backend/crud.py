@@ -45,7 +45,7 @@ def get_messages(db: Session, conversation_id: int) -> list[MessageRead]:
     messages = db.scalars(stmt).all()
     return [MessageRead.model_validate(m) for m in messages]
 
-def list_conversations(db: Session) -> list[Conversation]:
+def list_conversations(db: Session) -> list[ConversationRead]:
     stmt = (
         select(Conversation)
         .where(Conversation.deleted_at.is_(None))
@@ -61,4 +61,4 @@ def soft_delete_conversation(db: Session, conversation_id: int) -> ConversationR
     conversation.deleted_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(conversation)
-    return conversationRead.model_validate(conversation)
+    return ConversationRead.model_validate(conversation)

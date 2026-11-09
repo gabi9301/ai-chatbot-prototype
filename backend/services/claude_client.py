@@ -2,10 +2,18 @@ import anthropic
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 import crud
+from anthropic.types import MessageParam
 
 load_dotenv()
 
 client = anthropic.Anthropic()
+
+def _to_message_param(role: str, content: str) -> MessageParam:
+    if role == "user":
+        return {"role": "user", "content": content}
+    if role == "assistant":
+        return {"role": "assistant", "content": content}
+    raise ValueError(f"Unexpected message role: {role}")
 
 MODEL = "claude-haiku-5-5"
 SYSTEM_PROMPT = "You are a friendly and helpful assistant. Keep yourt answers clear and consice."
@@ -25,7 +33,7 @@ def get_reply(
         if conversation is None:
             raise ValueError("Conversation not found")
         history = [
-            {"role": m.role, "content": m.content}
+            _to_message_param(m.role, m.content)
             for m in crud.get_messages(db, conversation.id)
         ]
     # 2. Add the new user turn, then ask Claude.
@@ -61,7 +69,7 @@ def stream_reply(
         if conversation is None:
             raise ValueError("Conversation not found")
         history = [
-            {"role": m.role, "content": m.content}
+            _to_message_param(m.role, m.content)
             for m in crud.get_messages(db, conversation.id)
         ]
     history.append({"role": "user", "content": message})
