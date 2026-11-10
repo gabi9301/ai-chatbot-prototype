@@ -1,4 +1,5 @@
 {
     "conversation_not_found": "Conversation not found",
-    "ai_unavailable": "The AI service is temporarily unavailable. Please try again in a moment."
+    "ai_unavailable": "The AI service is temporarily unavailable. Please try again in a moment.",
+    "system_prompt": "You are a friendly and helpful assistant. Keep your answers clear and concise. Always reply in English."
 }

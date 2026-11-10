@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 import crud
 from anthropic.types import MessageParam
+from i18n import t
 
 load_dotenv()
 
@@ -16,7 +17,6 @@ def _to_message_param(role: str, content: str) -> MessageParam:
     raise ValueError(f"Unexpected message role: {role}")
 
 MODEL = "claude-haiku-5-5"
-SYSTEM_PROMPT = "You are a friendly and helpful assistant. Keep yourt answers clear and consice."
 
 def get_reply(
     db: Session,
@@ -41,7 +41,7 @@ def get_reply(
     response = client.messages.create(
         model=MODEL,
         max_tokens=1024,
-        system=SYSTEM_PROMPT,
+        system=t(language, "system_prompt"),
         messages=history,
     )
     reply = next((block.text for block in response.content if block.type == "text"), "")
@@ -80,7 +80,7 @@ def stream_reply(
     with client.messages.stream(
         model=MODEL,
         max_tokens=1024,
-        system=SYSTEM_PROMPT,
+        system=t(language, "system_prompt"),
         messages=history,
     ) as stream:
         for text in stream.text_stream:
