@@ -30,3 +30,10 @@ class ConversationRead(BaseModel):
 
 class ConversationDetail(ConversationRead):
     messages: list[MessageRead] = []
+
+class DocumentRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    source: str | None
+    content: str
+    created_at: datetime

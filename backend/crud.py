@@ -1,9 +1,10 @@
+from collections.abc import Sequence
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 
-from models import Conversation, Message
-from schemas import ConversationRead, MessageRead
+from models import Conversation, Message, Document, Chunk
+from schemas import ConversationRead, MessageRead, DocumentRead
 
 # --- For internal use : the only place where orm models are directly handled ---
 
@@ -62,3 +63,27 @@ def soft_delete_conversation(db: Session, conversation_id: int) -> ConversationR
     db.commit()
     db.refresh(conversation)
     return ConversationRead.model_validate(conversation)
+
+# --- Documents (RAG ingestion) ---
+
+def create_document_with_chunks(
+        db: Session,
+        source: str | None,
+        content: str,
+        chunk_contents: list[str],
+        embeddings: Sequence[Sequence[float]],
+) -> DocumentRead:
+    document = Document(source=source, content=content)
+    for index, (chunk_content, embedding) in enumerate(zip(chunk_contents, embeddings)):
+        document.chunks.append(
+            Chunk(
+                chunk_index=index,
+                content=chunk_content,
+                embedding=list(embedding),
+
+            )
+        )
+    db.add(document)
+    db.commit()
+    db.refresh(document)
+    return DocumentRead.model_validate(document)
