@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 
 from models import Conversation, Message, Document, Chunk
-from schemas import ConversationRead, MessageRead, DocumentRead
+from schemas import ConversationRead, MessageRead, DocumentRead, ChunkRead
 
 # --- For internal use : the only place where orm models are directly handled ---
 
@@ -87,3 +87,18 @@ def create_document_with_chunks(
     db.commit()
     db.refresh(document)
     return DocumentRead.model_validate(document)
+
+# --- Retrieval (similarity search) ---
+
+def search_similar_chunks(
+    db: Session,
+    embedding: Sequence[float],
+    k: int = 5,
+) -> list[ChunkRead]:
+    stmt = (
+        select(Chunk)
+        .order_by(Chunk.embedding.cosine_distance(embedding))
+        .limit(k)
+    )
+    chunks = db.execute(stmt).scalars().all()
+    return [ChunkRead.model_validate(chunk) for chunk in chunks]
