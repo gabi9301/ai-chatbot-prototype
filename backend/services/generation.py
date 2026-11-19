@@ -31,7 +31,7 @@ def build_context(chunks: list[ChunkRead]) -> str:
 
     )
 
-def answer_question(db: Session, query: str, language: str, k: int = 5) -> str:
+def answer_question(db: Session, query: str, language: str = "en", k: int = 5) -> str:
     chunks = retrieve_chunks(db, query, k)
 
     if not chunks:

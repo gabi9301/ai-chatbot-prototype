@@ -45,3 +45,16 @@ class ChunkRead(BaseModel):
     chunk_index: int
     content: str
     created_at: datetime
+
+class IngestRequest(BaseModel):
+    content: str
+    source: str | None = None
+    language: str = "en"
+
+class AskRequest(BaseModel):
+    query: str
+    language: str = "en"
+    k: int = 5
+
+class AskResponse(BaseModel):
+    answer: str
