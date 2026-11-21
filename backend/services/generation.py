@@ -31,12 +31,7 @@ def build_context(chunks: list[ChunkRead]) -> str:
 
     )
 
-def answer_question(db: Session, query: str, language: str = "en", k: int = 5) -> str:
-    chunks = retrieve_chunks(db, query, k)
-
-    if not chunks:
-        return t(language, "no_context_for_rag")
-    
+def build_prompt(chunks: list[ChunkRead], query: str) -> str:
     context = build_context(chunks)
 
     prompt = f"""
@@ -49,18 +44,46 @@ def answer_question(db: Session, query: str, language: str = "en", k: int = 5) -
     {context}
     </documents>
     """
+    return prompt
+
+
+
+def answer_question(db: Session, query: str, language: str = "en", k: int = 5) -> str:
+    chunks = retrieve_chunks(db, query, k)
+
+    if not chunks:
+        return t(language, "no_context_for_rag")
+
+    prompt = build_prompt(chunks, query)
 
     response = client.messages.create(
-            model=MODEL,
-            system=t(language, "system_prompt"),
-            max_tokens=1024,
-            messages=[{"role": "user", "content": prompt}]
+        model=MODEL,
+        system=t(language, "system_prompt"),
+        max_tokens=1024,
+        messages=[{"role": "user", "content": prompt}]
     )
 
     reply = next((block.text for block in response.content if block.type == "text"), "")
 
     return reply
 
+def stream_answer(db: Session, query: str, language: str = "en", k: int = 5):
+    chunks = retrieve_chunks(db, query, k)
+    if not chunks:
+        yield {"type": "delta", "text": t(language, "no_context_for_rag")}
+        yield {"type": "done"}
+        return
 
+    prompt = build_prompt(chunks, query)
 
+    with client.messages.stream(
+        model=MODEL,
+        max_tokens=1024,
+        system=t(language, "system_prompt"),
+        messages=[{"role": "user", "content": prompt}],
+    ) as stream:
+        for text in stream.text_stream:
+            yield {"type":"delta", "text": text}
+
+    yield {"type": "done"}
 
