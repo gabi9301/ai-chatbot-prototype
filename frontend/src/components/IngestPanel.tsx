@@ -4,6 +4,7 @@ import { ingestDocument } from '../api/rag'
 function IngestPanel() {
     const [content, setContent] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState('')
     const [ingestDocId, setIngestDocId] = useState<number | null>(null)
 
     const fileRef = useRef<HTMLInputElement>(null);
@@ -12,32 +13,36 @@ function IngestPanel() {
 
     const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
         const selected = e.target.files?.[0]
+        setError('No file selected.')
         if (!selected) return
 
         const extension = selected.name.split('.').pop()?.toLowerCase()
         if (!extension || !ALLOWED_EXTENSIONS.includes(extension)) {
             e.target.value = ''
+            setError('File extension not allowed.')
             return
         }
 
         try {
             const text = await selected.text()
             if (text.trim() === '') return
+            setError('')
             setContent(text)
         } catch (err) {
-            console.error("An error occured while extracting texts from file")
+            setError("An error occured while extracting texts from file")
         }
     }
 
     const handleSubmit = async () => {
         if (content.trim() === '') return
+        setError('')
         setIsLoading(true)
 
         try {
             const data = await ingestDocument({ content: content })
             setIngestDocId(data.id)
         } catch (err) {
-            console.error("An error occured while ingesting document")
+            setError("An error occured while ingesting document")
         } finally {
             setIsLoading(false)
         }
@@ -72,6 +77,7 @@ function IngestPanel() {
                 disabled={isLoading || !content}
             >Submit
             </button>
+            {error && <div className="error">{error}</div>}
         </div>
     )
 }

@@ -290,3 +290,80 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+/* ===== Ask panel (RAG query + answer) ===== */
+.ask-panel {
+  width: 420px;
+  max-width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow);
+}
+
+.ask-panel textarea {
+  width: 100%;
+  min-height: 80px;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text-h);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.ask-panel textarea:focus {
+  border-color: var(--accent);
+}
+
+/* read-only answer area — looks like "output" */
+.ask-panel textarea[readonly] {
+  min-height: 160px;
+  background: var(--code-bg);
+  color: var(--text);
+  cursor: default;
+}
+
+.ask-panel button {
+  align-self: flex-start;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.ask-panel button:hover {
+  filter: brightness(0.92);
+}
+
+.ask-panel button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* loading / error status lines */
+.ask-panel .status {
+  font-size: 14px;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.ask-panel .error {
+  font-size: 14px;
+  color: #e5484d;
+}
