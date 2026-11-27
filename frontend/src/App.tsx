@@ -1,47 +1,23 @@
 import { useState } from 'react'
-import { sendMessageToApi, resetConversation } from './api/chat'
-import ChatWindow from './components/ChatWindow'
-import MessageInput from './components/MessageInput'
-import type { ChatMessage } from './types'
+import RagPanel from './components/RagPanel'
+import ChatPanel from './components/ChatPanel'
+
 import './App.css'
 
 function App() {
-  const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [mode, setMode] = useState<'rag' | 'chat'>('rag')
 
-  const sendMessage = async (message: string) => {
-    const userMessage: ChatMessage = { role: 'user', content: message }
-    setMessages((prev) => [...prev, userMessage])
-    setIsLoading(true)
-
-    try {
-      const reply = await sendMessageToApi(message)
-      const assistantMessage: ChatMessage = { role: 'assistant', content: reply }
-      setMessages((prev) => [...prev, assistantMessage])
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleReset = async () => {
-    try {
-      await resetConversation()
-      setMessages([])
-    } catch (error) {
-      console.error(error)
-    }
-  }
   return (
-    <div className="chat-container">
-      <header className="chat-header">
-        <h1>AI Chatbot</h1>
-        <button onClick={handleReset}>Reset</button>
-      </header>
-      <ChatWindow messages={messages} isLoading={isLoading} />
-      <MessageInput onSend={sendMessage} />
+    <div className="app-shell">
+      <nav className="nav-rail">
+        <button className={mode === 'rag' ? 'is-active' : ''} onClick={() => setMode('rag')}>RAG</button>
+        <button className={mode === 'chat' ? 'is-active' : ''} onClick={() => setMode('chat')}>Chat</button>
+      </nav>
+      <main className="main-area">
+        {mode === 'rag' ? <RagPanel /> : <ChatPanel />}
+      </main>
     </div>
+
   )
 }
 
